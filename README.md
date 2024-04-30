@@ -25,12 +25,8 @@ But first,
 
 ```python
 # Import and preview the data
-
-
-df = None
-
-
-
+df = pd.read_csv("mushrooms.csv")
+df.head()
 ```
 
 The next step is to define the predictor and target variables. Did you notice all the columns are of type `object`? So you will need to first create dummy variables. 
@@ -43,18 +39,18 @@ The next step is to define the predictor and target variables. Did you notice al
 
 ```python
 # Define y
-y = None
+y = pd.get_dummies(df['class'], drop_first=True)
 y = y['p']
 
 # Define X
-X = None
-X = None
+X = df.drop('class', axis=1)
+X = pd.get_dummies(df, drop_first=True)
 
 # Import train_test_split
-
+from sklearn.model_selection import train_test_split
 
 # Split the data into training and test sets
-X_train, X_test, y_train, y_test = None
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 ```
 
 - Fit the vanilla logistic regression model we defined for you to training data 
@@ -69,10 +65,10 @@ from sklearn.linear_model import LogisticRegression
 logreg = LogisticRegression(fit_intercept=False, C=1e12, solver='liblinear')
 
 # Fit the model to training data
-model_log = None
+model_log = logreg.fit(X_train, y_train)
 
 # Predict on test set
-y_hat_test = None
+y_hat_test = model_log.predict(X_train)
 ```
 
 ## Calculate TPR and FPR
@@ -82,19 +78,19 @@ Next, calculate the false positive rate and true positive rate (you can use the 
 
 ```python
 # Import roc_curve, auc
-
+from sklearn.metrics import roc_curve, auc
 
 # Calculate the probability scores of each point in the training set
-y_train_score = None
+y_train_score = model_log.predict_proba(X_train)[:, 1]
 
 # Calculate the fpr, tpr, and thresholds for the training set
-train_fpr, train_tpr, thresholds = None
+train_fpr, train_tpr, thresholds = roc_curve(y_train, y_train_score)
 
 # Calculate the probability scores of each point in the test set
-y_score = None
+y_score = model_log.predict_proba(X_test)[:, 1]
 
 # Calculate the fpr, tpr, and thresholds for the test set
-fpr, tpr, thresholds = None
+fpr, tpr, thresholds = roc_curve(y_test, y_score)
 ```
 
 ## Draw the ROC curve
@@ -133,15 +129,21 @@ plt.show()
 # ROC curve for test set
 plt.figure(figsize=(10, 8))
 lw = 2
-
+plt.plot(fpr, tpr, color='darkorange',
+         lw=lw, label='ROC curve')
+plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.yticks([i/20.0 for i in range(21)])
+plt.xticks([i/20.0 for i in range(21)])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic (ROC) Curve for Test Set')
+plt.legend(loc='lower right')
+print('AUC: {}'.format(auc(train_fpr, train_tpr)))
+plt.show()
 ```
 
-What do you notice about these ROC curves? Your answer here: 
-
-
-```python
-
-```
 
 ## Interpret ROC curves
 
@@ -156,7 +158,7 @@ Think about the scenario of this model: predicting heart disease. If you tune th
 
 ```python
 # Write the approximate fpr when tpr = 0.8
-fpr = None
+fpr = 0.2
 ```
 
 If you instead tune the model to have a 95.2% True Postive Rate, what will the False Postive Rate be?
@@ -164,7 +166,7 @@ If you instead tune the model to have a 95.2% True Postive Rate, what will the F
 
 ```python
 # Write the approximate fpr when tpr = 0.95
-fpr = None
+fpr = 0.05
 ```
 
 In the case of heart disease dataset, do you find any of the above cases acceptable? How would you tune the model? Describe what this would mean in terms of the number of patients falsely scared of having heart disease and the risk of missing the warning signs for those who do actually have heart disease.
@@ -172,9 +174,8 @@ In the case of heart disease dataset, do you find any of the above cases accepta
 Your answer here: 
 
 
-```python
+In the case of heart disease dataset, the first case (tpr =0.82) is unacceptable since the threshhold of 18% of the patients being falsely diagnosed having a heart disease is a large percentage. However, the second case (tpr= 0.95) is acceptable since the margin of error is small.
 
-```
 
 ## Summary
 
