@@ -174,9 +174,8 @@ In the case of heart disease dataset, do you find any of the above cases accepta
 Your answer here: 
 
 
-```python
 In the case of heart disease dataset, the first case (tpr =0.82) is unacceptable since the threshhold of 18% of the patients being falsely diagnosed having a heart disease is a large percentage. However, the second case (tpr= 0.95) is acceptable since the margin of error is small.
-```
+
 
 ## Summary
 
